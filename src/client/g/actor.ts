@@ -9,6 +9,7 @@ export interface ActorOptions {
   hasMuzzleEffect?: boolean;
   hasTrail?: boolean;
   destroyedEffect?: string;
+  isEndingGameWhenDestroyed?: boolean;
 }
 
 export class Actor {
@@ -47,8 +48,7 @@ export class Actor {
     }
     this.prevPos.set(this.pos);
     this.pos.add(this.vel);
-    this.pos.x += Math.cos(this.angle) * this.speed;
-    this.pos.y += Math.sin(this.angle) * this.speed;
+    g.Vector.addAngle(this.pos, this.angle, this.speed);
     if (this.sprite != null) {
       this.drawSprite();
     }
@@ -69,6 +69,9 @@ export class Actor {
       this.emitParticles(`${this.options.destroyedEffect}_${this.type}_d`,
         {},
         this.game.particlePool);
+    }
+    if (this.options.isEndingGameWhenDestroyed) {
+      this.game.end();
     }
     this.remove();
   }
@@ -123,12 +126,25 @@ export class Actor {
     this.modules.splice(i, 0, module);
     this.moduleNames.splice(i, 0, g.getClassName(module));
   }
+
+  /*getReplayStatus() {
+    if (this.replayPropertyNames == null) {
+      return null;
+    }
+    return ir.objectToArray(this, this.replayPropertyNames);
+  }
+
+  setReplayStatus(status) {
+    ir.arrayToObject(status, this.replayPropertyNames, this);
+  }*/
 }
 
-export class Ship extends Actor {
+export class Player extends Actor {
   constructor(game: g.Game = g.game) {
-    super({ hasTrail: true, destroyedEffect: 'u' }, game);
-    this.type = this.collisionType = 'ship';
+    super({
+      hasTrail: true, destroyedEffect: 'u', isEndingGameWhenDestroyed: true
+    }, game);
+    this.type = this.collisionType = 'player';
     this.addSpritePixels(pag.generate(['x x', ' xxx'], { hue: 0.2 }));
     this.collision.set(5, 5);
     const s = game.screen;

@@ -16,6 +16,12 @@ export * from './modules';
 declare const require: any;
 export const p5 = require('p5');
 export let p: p5;
+
+export enum Scene {
+  title, started, paused, ended, replay
+};
+
+export let scene = Scene.started;
 export let games: Game[] = [];
 export let game: Game;
 let seedRandom: Random;
@@ -61,6 +67,8 @@ export function setUpdatingCountPerFrame(c: number) {
 }
 
 export function beginGames(seed: number = null) {
+  scene = Scene.started;
+  ui.clearJustPressed();
   if (seed == null) {
     seed = seedRandom.getInt(9999999);
   }
@@ -70,6 +78,41 @@ export function beginGames(seed: number = null) {
   });
 }
 
+export function endGames() {
+  scene = Scene.ended;
+  ui.clearJustPressed();
+  _.forEach(games, g => {
+    g.end();
+  });
+}
+
+export function pauseGames() {
+  scene = Scene.paused;
+  _.forEach(games, g => {
+    g.pause();
+  });
+}
+
+export function restartGames() {
+  scene = Scene.started;
+  _.forEach(games, g => {
+    g.restart();
+  });
+}
+
+export function replayGames() {
+  scene = Scene.replay;
+  ui.clearJustPressed();
+  /*if (options.isReplayEnabled) {
+  const status = ir.startReplay();
+  if (status !== false) {
+    _.forEach(games, g => {
+      g.replay(status);
+    });
+  }
+  }*/
+}
+
 function setSeeds(seed: number) {
   pag.setSeed(seed);
   ppe.setSeed(seed);
@@ -77,11 +120,24 @@ function setSeeds(seed: number) {
 }
 
 function update() {
-  ui.update();
+  if (scene === Scene.replay) {
+    /*const events = ir.getEvents();
+    if (events !== false) {
+      ui.updateInReplay(events);
+    } else {
+      replayGames();
+    }*/
+  } else {
+    ui.update();
+    //ir.recordEvents(ui.getReplayEvents());
+  }
   _.times(updatingCountPerFrame, i => {
+    const hasScreen = i >= updatingCountPerFrame - 1;
     _.forEach(games, g => {
+      g.hasScreen = hasScreen;
       g.update();
     });
+    //updateFunc();
   });
 }
 
@@ -91,8 +147,14 @@ export class Game {
   particlePool: ppe.ParticlePool;
   screen: Screen;
   ticks = 0;
+  score = 0;
+  scoreMultiplier = 0;
   random: Random;
   modules = [];
+  scene = Scene.started;
+  initialStatus = { r: 0, s: 0 };
+  replayScore: number;
+  hasScreen = true;
 
   constructor(width: number, height: number,
     public initFunc: Function = null, public updateFunc: Function = null) {
@@ -108,6 +170,32 @@ export class Game {
       game = this;
     }
     games.push(this);
+  }
+
+  addScore(v: number = 1, pos: p5.Vector = null) {
+    if (this.scene === Scene.started || this.scene === Scene.replay) {
+      this.score += v * this.scoreMultiplier;
+      if (pos != null) {
+        let s = '+';
+        if (this.scoreMultiplier <= 1) {
+          s += `${v}`;
+        } else if (v <= 1) {
+          s += `${this.scoreMultiplier}`;
+        } else {
+          s += `${v}X${this.scoreMultiplier}`;
+        }
+        const t = new Text(s, 30, null, this);
+        t.pos.set(pos);
+      }
+    }
+  }
+
+  addScoreMultiplier(v: number = 1) {
+    this.scoreMultiplier += v;
+  }
+
+  setScoreMultiplier(v: number = 1) {
+    this.scoreMultiplier = v;
   }
 
   clearModules() {
@@ -130,10 +218,35 @@ export class Game {
     }
   }
 
-  remove() {
-    _.remove(games, g => g === this);
-    this.p.draw = null;
-    this.screen.remove();
+  end() {
+    if (this.scene === Scene.ended || this.scene == Scene.title) {
+      return;
+    }
+    let isReplay = this.scene === Scene.replay;
+    this.scene = Scene.ended;
+    this.ticks = 0;
+    //sss.stopBgm();
+    /*if (!isReplay && options.isReplayEnabled) {
+      initialStatus.s = score;
+      ir.recordInitialStatus(initialStatus);
+      ir.saveAsUrl();
+    }*/
+  }
+
+  pause() {
+    this.scene = Scene.paused;
+  }
+
+  restart() {
+    this.scene = Scene.started;
+  }
+
+  replay(status) {
+    /*this.clearGameStatus();
+    this.scene = Scene.replay;
+    this.random.setSeed(status.r);
+    this.replayScore = status.s;
+    initGameFunc();*/
   }
 
   clearGameStatus() {
@@ -143,7 +256,27 @@ export class Game {
     this.ticks = 0;
   }
 
+  remove() {
+    _.remove(games, g => g === this);
+    this.p.draw = null;
+    this.screen.remove();
+  }
+
   update() {
+    if (this.scene === Scene.paused) {
+      return;
+    }
+    if (!this.hasScreen) {
+      _.forEach(this.modules, m => {
+        if (m.isEnabled) {
+          m.update();
+        }
+      });
+      this.actorPool.updateLowerZero();
+      this.actorPool.update();
+      this.ticks++;
+      return;
+    }
     this.screen.clear();
     _.forEach(this.modules, m => {
       if (m.isEnabled) {
@@ -156,6 +289,7 @@ export class Game {
     if (this.updateFunc != null) {
       this.updateFunc();
     }
+    text.draw(`${this.score}`, 1, 1, text.Align.left, this);
     this.ticks++;
   }
 
@@ -223,6 +357,23 @@ export class ActorPool {
 
   getByCollisionType(collisionType: string) {
     return _.filter<Actor>(this.actors, a => a.collisionType == collisionType);
+  }
+
+  getReplayStatus() {
+    let status = [];
+    /*_.forEach(this.actors, (a: Actor) => {
+      let array = a.getReplayStatus();
+      if (array != null) {
+        status.push([a.type, array]);
+      }
+    });*/
+    return status;
+  }
+
+  setReplayStatus(status: any[], actorGeneratorFunc) {
+    _.forEach(status, s => {
+      actorGeneratorFunc(s[0], s[1]);
+    });
   }
 }
 

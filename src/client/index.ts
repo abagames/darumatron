@@ -41,7 +41,7 @@ window.onload = () => {
 let pa;
 
 function init() {
-  pa = new g.Ship();
+  pa = new g.Player();
   new g.MoveWasd(pa, 2, 0.1);
 }
 
