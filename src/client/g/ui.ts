@@ -10,6 +10,7 @@ let canvas: HTMLCanvasElement;
 let pixelSize: p5.Vector;
 let isCursorDown = false;
 let isInitialized = false;
+let isUsingStickKeysAsButton: boolean;
 const isKeyPressing = _.times(256, () => false);
 const stickKeys = [[39, 68, 102], [40, 83, 101, 98], [37, 65, 100], [38, 87, 104]];
 const stickXys = [[1, 0], [0, 1], [-1, 0], [0, -1]];
@@ -48,6 +49,10 @@ export function init(_canvas: HTMLCanvasElement, _pixelSize: p5.Vector) {
   isInitialized = true;
 }
 
+export function useStickKeyAsButton(_isUsingStickKeysAsButton = true) {
+  isUsingStickKeysAsButton = _isUsingStickKeysAsButton;
+}
+
 export function clearJustPressed() {
   isJustPressed = false;
   isPressed = true;
@@ -57,12 +62,17 @@ export function update() {
   if (!isInitialized) {
     return;
   }
+  const pp = isPressed;
+  isPressed = isCursorDown;
   stick.set();
   _.forEach(stickKeys, (ks, i) => {
     _.forEach(ks, k => {
       if (isKeyPressing[k]) {
         stick.x += stickXys[i][0];
         stick.y += stickXys[i][1];
+        if (isUsingStickKeysAsButton) {
+          isPressed = true;
+        }
         return false;
       }
     });
@@ -75,8 +85,6 @@ export function update() {
     g.Vector.addAngle(stick, stickAngle * g.p.HALF_PI / 2, 1);
     stickAngle++;
   }
-  const pp = isPressed;
-  isPressed = isCursorDown;
   _.forEach(buttonKeys, k => {
     if (isKeyPressing[k]) {
       isPressed = true;

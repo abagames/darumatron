@@ -322,11 +322,15 @@ export class HaveGravity extends Module {
   }
 }
 
-export class CollideToWall extends Module {
+export class CollideToActor extends Module {
   velRatio = 1;
   isDestroying = false;
+  types = ['wall'];
 
-  constructor(actor: g.Actor, options: { velRatio?: number, isDestroying?: boolean } = {}) {
+  constructor(actor: g.Actor,
+    options: {
+      velRatio?: number, isDestroying?: boolean, types?: string[]
+    } = {}) {
     super(actor);
     if (options.velRatio != null) {
       this.velRatio = options.velRatio;
@@ -334,15 +338,20 @@ export class CollideToWall extends Module {
     if (options.isDestroying != null) {
       this.isDestroying = options.isDestroying;
     }
+    if (options.types != null) {
+      this.types = options.types;
+    }
   }
 
   update() {
     let collisionInfo: any = { dist: 999 };
-    _.forEach(this.actor.testCollision('wall'), (w: g.Wall) => {
-      const ci = w.getCollisionInfo(this.actor);
-      if (ci.dist < collisionInfo.dist) {
-        collisionInfo = ci;
-      }
+    _.forEach(this.types, t => {
+      _.forEach(this.actor.testCollision(t), (w: g.Wall) => {
+        const ci = w.getCollisionInfo(this.actor);
+        if (ci.dist < collisionInfo.dist) {
+          collisionInfo = ci;
+        }
+      });
     });
     if (collisionInfo.wall == null) {
       return;

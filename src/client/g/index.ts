@@ -317,7 +317,7 @@ export class ActorPool {
   }
 
   updateLowerZero() {
-    _.sortBy(this.actors, 'priority');
+    this.actors = _.sortBy(this.actors, 'priority');
     this.updateSorted(true);
   }
 

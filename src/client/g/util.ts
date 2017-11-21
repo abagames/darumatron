@@ -22,7 +22,7 @@ export function wrap(v: number, low: number, high: number) {
 }
 
 export function getDifficulty(game: g.Game = g.game) {
-  return game.ticks * (1 / 60 / 3) + 1;
+  return game.scene === g.Scene.title ? 1 : game.ticks * (1 / 60 / 30) + 1;
 }
 
 export function fillStar(c = 64,

@@ -89,6 +89,40 @@ export class Actor {
     );
   }
 
+  getCollisionInfo(actor) {
+    let angle: number;
+    const wa = Math.atan2(this.collision.y, this.collision.x);
+    const a = g.Vector.getAngle(this.pos, actor.prevPos);
+    if (a > Math.PI - wa || a <= -Math.PI + wa) {
+      angle = 2;
+    } else if (a > wa) {
+      angle = 1;
+    } else if (a > -wa) {
+      angle = 0;
+    } else {
+      angle = 3;
+    }
+    return { wall: this, angle, dist: this.pos.dist(actor.prevPos) };
+  }
+
+  adjustPos(actor, angle: number) {
+    switch (angle) {
+      case 0:
+        actor.pos.x = this.pos.x + (this.collision.x + actor.collision.x) / 2;
+        break;
+      case 1:
+        actor.pos.y = this.pos.y + (this.collision.y + actor.collision.y) / 2;
+        break;
+      case 2:
+        actor.pos.x = this.pos.x - (this.collision.x + actor.collision.x) / 2;
+        break;
+      case 3:
+        actor.pos.y = this.pos.y - (this.collision.y + actor.collision.y) / 2;
+        break;
+    }
+    return angle;
+  }
+
   emitParticles(patternName: string, options: ppe.EmitOptions = {},
     pool: ppe.ParticlePool = null) {
     ppe.emit(patternName, this.pos.x, this.pos.y, this.angle, options, pool);
@@ -96,6 +130,10 @@ export class Actor {
 
   addSpritePixels(pixels: pag.Pixel[][][], offsetX = 0, offsetY = 0) {
     this.sprite.push({ pixels, offset: g.p.createVector(offsetX, offsetY) });
+  }
+
+  clearSpritePixels() {
+    this.sprite = [];
   }
 
   drawSprite(x: number = this.pos.x, y: number = this.pos.y) {
@@ -142,7 +180,7 @@ export class Actor {
 export class Player extends Actor {
   constructor(game: g.Game = g.game) {
     super({
-      hasTrail: true, destroyedEffect: 'u', isEndingGameWhenDestroyed: true
+      hasTrail: true, destroyedEffect: 'e', isEndingGameWhenDestroyed: true
     }, game);
     this.type = this.collisionType = 'player';
     this.addSpritePixels(pag.generate(['x x', ' xxx'], { hue: 0.2 }));
@@ -228,40 +266,6 @@ export class Wall extends Actor {
     this.pos.set(pos);
     this.priority = 0.2;
     this.collision.set(width, height);
-  }
-
-  getCollisionInfo(actor) {
-    let angle: number;
-    const wa = Math.atan2(this.collision.y, this.collision.x);
-    const a = g.Vector.getAngle(this.pos, actor.prevPos);
-    if (a > Math.PI - wa || a <= -Math.PI + wa) {
-      angle = 2;
-    } else if (a > wa) {
-      angle = 1;
-    } else if (a > -wa) {
-      angle = 0;
-    } else {
-      angle = 3;
-    }
-    return { wall: this, angle, dist: this.pos.dist(actor.prevPos) };
-  }
-
-  adjustPos(actor, angle: number) {
-    switch (angle) {
-      case 0:
-        actor.pos.x = this.pos.x + (this.collision.x + actor.collision.x) / 2;
-        break;
-      case 1:
-        actor.pos.y = this.pos.y + (this.collision.y + actor.collision.y) / 2;
-        break;
-      case 2:
-        actor.pos.x = this.pos.x - (this.collision.x + actor.collision.x) / 2;
-        break;
-      case 3:
-        actor.pos.y = this.pos.y - (this.collision.y + actor.collision.y) / 2;
-        break;
-    }
-    return angle;
   }
 }
 
