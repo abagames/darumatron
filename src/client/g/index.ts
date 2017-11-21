@@ -186,6 +186,7 @@ export class Game {
         }
         const t = new Text(s, 30, null, this);
         t.pos.set(pos);
+        t.vel.y = -2;
       }
     }
   }
@@ -254,6 +255,8 @@ export class Game {
     this.actorPool.clear();
     this.particlePool.clear();
     this.ticks = 0;
+    this.score = 0;
+    this.scoreMultiplier = 1;
   }
 
   remove() {
@@ -290,6 +293,9 @@ export class Game {
       this.updateFunc();
     }
     text.draw(`${this.score}`, 1, 1, text.Align.left, this);
+    if (this.scoreMultiplier > 1) {
+      text.draw(`X${this.scoreMultiplier}`, this.screen.size.x, 1, text.Align.right);
+    }
     this.ticks++;
   }
 

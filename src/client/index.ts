@@ -87,6 +87,8 @@ class Player extends g.Player {
 }
 
 class Daruma extends g.Enemy {
+  item: g.Item;
+
   constructor(y, isFirst = false) {
     super();
     this.getModule('RemoveWhenInAndOut').paddingOuter = 200;
@@ -97,6 +99,17 @@ class Daruma extends g.Enemy {
     if (!isFirst && g.game.random.get() < 0.5) {
       width = 10;
       x += g.game.random.get() < 0.5 ? -14 : 14;
+    }
+    if (!isFirst && g.game.random.get() < 0.2) {
+      let ix: number;
+      if (x === screen.size.x / 2) {
+        ix = g.game.random.get() < 0.5 ? screen.size.x / 4 : screen.size.x / 4 * 3;
+      } else if (x < screen.size.x / 2) {
+        ix = screen.size.x / 4 * 3;
+      } else {
+        ix = screen.size.x / 4;
+      }
+      this.item = new Item(g.p.createVector(ix, y));
     }
     const pat = _.times(width, () => 'x').join('');
     this.addSpritePixels(pag.generate([pat, pat, pat], {
@@ -110,6 +123,9 @@ class Daruma extends g.Enemy {
   update() {
     this.vel.y += 1;
     super.update();
+    if (this.item != null) {
+      this.item.pos.y = this.pos.y;
+    }
   }
 
   destroy() {
@@ -117,6 +133,27 @@ class Daruma extends g.Enemy {
     const min = _.minBy(g.game.actorPool.get('enemy'), a => a.pos.y);
     const dr = new Daruma(min.pos.y - 25);
     floor.vel.y -= 0.1;
+    if (this.item != null && this.item.isAlive) {
+      g.game.setScoreMultiplier(1);
+      this.item.remove();
+    }
+    g.game.addScore(1, this.pos);
+  }
+}
+
+class Item extends g.Item {
+  constructor(pos: p5.Vector) {
+    super(pos);
+    this.options.hasTrail = false;
+  }
+
+  destroy() {
+    super.destroy();
+    if (g.game.scoreMultiplier < 10) {
+      g.game.addScoreMultiplier();
+    } else {
+      g.game.addScore(10, this.pos);
+    }
   }
 }
 
@@ -129,6 +166,5 @@ class Floor extends g.Wall {
       this.vel.y *= 0.5;
     }
     this.vel.y += 0.005 * g.getDifficulty();
-    //this.pos.y += 0.1 * g.getDifficulty();
   }
 }

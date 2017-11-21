@@ -239,16 +239,13 @@ export class Item extends Actor {
     }
     this.priority = 0.6;
     this.collision.set(10, 10);
+    new g.DestroyWhenColliding(this, 'player');
   }
 
   update() {
     super.update();
     this.vel.add(this.gravity);
     this.vel.mult(0.99);
-  }
-
-  destroy() {
-    super.destroy();
   }
 }
 
