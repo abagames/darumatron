@@ -27,6 +27,12 @@ export function init() {
       },
       score: {
         type: Sequelize.INTEGER
+      },
+      rank: {
+        type: Sequelize.INTEGER
+      },
+      time: {
+        type: Sequelize.BIGINT
       }
     });
     return load();
@@ -37,7 +43,7 @@ export function init() {
 }
 
 function load() {
-  return Score.findAll({ order: [['score', 'DESC']] }).then(ss => {
+  return Score.findAll({ order: [['rank']] }).then(ss => {
     leaderboard.init(ss);
   });
 }

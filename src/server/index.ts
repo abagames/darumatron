@@ -20,6 +20,12 @@ app.post('/api/score', (req: any, res) => {
   setDbSavingTimeout();
 });
 
+app.post('/api/currentScore', (req: any, res) => {
+  leaderboard.addCurrentScore(req.body);
+  res.send('');
+  setDbSavingTimeout();
+});
+
 let dbSavingTimeout;
 
 function setDbSavingTimeout() {
@@ -37,6 +43,7 @@ function saveToDb() {
 
 const listener = app.listen(process.env.PORT, () => {
   db.init().then(() => {
+    setInterval(leaderboard.clearCurrentScores, 15 * 1000);
     console.log(`darumatron server ready. port: ${listener.address().port}`);
   });
 });
