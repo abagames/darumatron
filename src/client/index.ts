@@ -79,6 +79,12 @@ function init() {
 }
 
 function update() {
+  if (g.game.ticks % 17 === 0) {
+    g.game.addScoreMultiplier(-Math.floor(1 + g.game.scoreMultiplier * 0.05));
+    if (g.game.scoreMultiplier < 1) {
+      g.game.setScoreMultiplier(1);
+    }
+  }
 }
 
 class Player extends g.Player {
@@ -105,6 +111,7 @@ class Player extends g.Player {
   destroy() {
     super.destroy();
     floor.destroy();
+    g.game.setScoreMultiplier(1);
   }
 }
 
@@ -122,7 +129,7 @@ class Daruma extends g.Enemy {
       width = 10;
       x += g.game.random.get() < 0.5 ? -14 : 14;
     }
-    if (!isFirst && g.game.random.get() < 0.2) {
+    if (!isFirst && g.game.random.get() < 0.3) {
       let ix: number;
       if (x === screen.size.x / 2) {
         ix = g.game.random.get() < 0.5 ? screen.size.x / 4 : screen.size.x / 4 * 3;
@@ -171,10 +178,11 @@ class Item extends g.Item {
 
   destroy() {
     super.destroy();
-    if (g.game.scoreMultiplier < 10) {
-      g.game.addScoreMultiplier();
-    } else {
-      g.game.addScore(10, this.pos);
+    if (g.game.scoreMultiplier < 100) {
+      g.game.addScoreMultiplier(10);
+    }
+    if (g.game.scoreMultiplier > 100) {
+      g.game.setScoreMultiplier(100);
     }
   }
 }
@@ -187,6 +195,6 @@ class Floor extends g.Wall {
       this.pos.y += (120 - this.pos.y) * 0.1;
       this.vel.y *= 0.5;
     }
-    this.vel.y += 0.005 * g.getDifficulty();
+    this.vel.y += 0.0075 * g.getDifficulty();
   }
 }
