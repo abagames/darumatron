@@ -11,7 +11,11 @@ app.use(bodyParser.json());
 app.use(express.static('docs'));
 
 app.get('/api/score', (req, res) => {
-  res.json(leaderboard.getScores());
+  res.json(leaderboard.getScores(false, req.query));
+});
+
+app.get('/api/currentScore', (req, res) => {
+  res.json(leaderboard.getScores(true, req.query));
 });
 
 app.post('/api/score', (req: any, res) => {

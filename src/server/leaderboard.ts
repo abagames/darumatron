@@ -47,27 +47,55 @@ export function saveToDb() {
   return db.save(scores);
 }
 
-export function getScores() {
-  let _scores = scores.concat(currentScores);
-  _scores = _.sortBy(_scores, s => -s.score);
-  return _.times(10, i => _scores[i]);
+export function getScores(isIncludingCurrent: boolean, query: any) {
+  let _scores = scores;
+  if (isIncludingCurrent) {
+    _scores = _scores.concat(currentScores);
+    _scores = _.sortBy(_scores, s => -s.score);
+  }
+  let count = 10;
+  if (query.count != null) {
+    count = Number(query.count);
+  }
+  let startIndex = 0;
+  if (query.score != null) {
+    const scoreIndex = _.sortedIndexBy
+      (_scores, { score: Number(query.score) }, s => -s.score);
+    startIndex = scoreIndex - Math.floor(count / 2);
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+  }
+  if (count + startIndex >= _scores.length) {
+    startIndex -= count + startIndex - scores.length - 1;
+    if (startIndex < 0) {
+      startIndex = 0;
+    }
+  }
+  if (count + startIndex >= _scores.length) {
+    count = _scores.length - startIndex;
+  }
+  return _.times(count, i => _scores[i + startIndex]);
 }
 
 export function addScore(data) {
   const best = _.find(scores, s => s.playerId === data.playerId);
-  if (data.score > best.score) {
+  if (best == null || data.score > best.score) {
+    currentScores = _.filter(currentScores, s => s.playerId !== data.playerId);
     data.time = new Date().getTime();
-    insertScore(scores, data);
+    scores = insertScore(scores, data);
     scores = _.map(scores, (s, i) => {
       s.rank = i;
       return s;
     });
+  } else {
+    addCurrentScore(data);
   }
 }
 
 export function addCurrentScore(data) {
   data.time = new Date().getTime();
-  insertScore(currentScores, data);
+  currentScores = insertScore(currentScores, data);
 }
 
 function insertScore(_scores, data) {
@@ -75,6 +103,7 @@ function insertScore(_scores, data) {
   const insertIndex = _.sortedIndexBy
     (_scores, { score: data.score }, s => -s.score);
   _scores.splice(insertIndex, 0, data);
+  return _scores;
 }
 
 export function getNextPlayerId() {

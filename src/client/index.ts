@@ -24,17 +24,39 @@ window.onload = () => {
 function initDb() {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
-  return window.fetch('/api/score', {
+  const playerId = 1;
+  const name = 'foo';
+  let score = Math.floor(Math.random() * 120 + 900);
+  return window.fetch('/api/currentScore', {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      playerId: 1,
-      name: 'foo',
-      score: Math.floor(Math.random() * 120 + 900)
+      playerId,
+      name,
+      score
     })
   }).
     then(() => {
-      return window.fetch('/api/score');
+      score += Math.floor(Math.random() * 100);
+      return window.fetch('/api/score', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          playerId,
+          name,
+          score
+        })
+      })
+    }).
+    then(() => {
+      setTimeout(() => {
+        window.fetch('/api/currentScore').
+          then(result => result.json()).
+          then(json => {
+            console.log(json);
+          });
+      }, 20 * 1000);
+      return window.fetch('/api/currentScore?count=10&score=500');
     }).
     then(result => result.json()).
     then(json => {
