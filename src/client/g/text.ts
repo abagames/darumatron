@@ -126,7 +126,9 @@ function generatePixels(str: string, scale: number, hue: number = null) {
       }
     });
   });
-  const pagOptions: any = { isMirrorY: false, scale: 1, rotationNum: 1 };
+  const pagOptions: pag.PagOptions = {
+    isMirrorY: false, scale: 1, rotationNum: 1, colorLighting: 0.33
+  };
   if (hue != null) {
     pagOptions.hue = hue;
   }
