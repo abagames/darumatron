@@ -71,7 +71,7 @@ function init() {
   player.pos.set(screen.size.x * 0.25, screen.size.y * 0.75);
   player.angle = -g.p.HALF_PI;
   _.times(7, i => {
-    const dr = new Daruma(i * 22 - 100, true);
+    const dr = new Daruma(true);
   });
   floor = new Floor
     (g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
@@ -84,6 +84,9 @@ function update() {
     if (g.game.scoreMultiplier < 1) {
       g.game.setScoreMultiplier(1);
     }
+  }
+  if (g.game.scene === g.Scene.title && g.game.random.get() < 0.02) {
+    new Daruma()
   }
 }
 
@@ -117,22 +120,26 @@ class Player extends g.Player {
 
 class Daruma extends g.Enemy {
   item: g.Item;
+  colors = [[0, 0.7], [0.2, 0.7], [0.2, 0.2], [0.3, 0.7], [0.6, 0.7]];
 
-  constructor(y, isFirst = false) {
+  constructor(isFirst = false) {
     super();
     this.getModule('RemoveWhenInAndOut').paddingOuter = 999;
     this.options.hasTrail = false;
     this.clearSpritePixels();
+    const min = _.minBy(this.game.actorPool.get('enemy'), a => a.pos.y);
+    const y = min == null ? -25 : min.pos.y - 25;
     let width = 6;
     let x = screen.size.x / 2;
-    if (!isFirst && g.game.random.get() < 0.5) {
+    const random = this.game.random;
+    if (!isFirst && random.get() < 0.5) {
       width = 10;
-      x += g.game.random.get() < 0.5 ? -14 : 14;
+      x += random.get() < 0.5 ? -14 : 14;
     }
-    if (!isFirst && g.game.random.get() < 0.3) {
+    if (!isFirst && random.get() < 0.3) {
       let ix: number;
       if (x === screen.size.x / 2) {
-        ix = g.game.random.get() < 0.5 ? screen.size.x / 4 : screen.size.x / 4 * 3;
+        ix = random.get() < 0.5 ? screen.size.x / 4 : screen.size.x / 4 * 3;
       } else if (x < screen.size.x / 2) {
         ix = screen.size.x / 4 * 3;
       } else {
@@ -141,12 +148,13 @@ class Daruma extends g.Enemy {
       this.item = new Item(g.p.createVector(ix, y));
     }
     const pat = _.times(width, () => 'x').join('');
-    this.addSpritePixels(pag.generate([pat, pat, pat], {
-      isMirrorX: true, hue: 0.2
-    }));
     this.collision.set(width * 7, 20);
-    new g.CollideToActor(this, { velRatio: 0, types: ['enemy', 'wall'] });
+    const color = random.select(this.colors);
+    this.addSpritePixels(pag.generate([pat, pat, pat], {
+      isMirrorX: true, hue: color[0], saturation: color[1]
+    }));
     this.pos.set(x, y);
+    new g.CollideToActor(this, { velRatio: 0, types: ['enemy', 'wall'] });
   }
 
   update() {
@@ -159,8 +167,7 @@ class Daruma extends g.Enemy {
 
   destroy() {
     super.destroy();
-    const min = _.minBy(g.game.actorPool.get('enemy'), a => a.pos.y);
-    const dr = new Daruma(min.pos.y - 25);
+    new Daruma();
     floor.vel.y -= 0.1;
     if (this.item != null && this.item.isAlive) {
       g.game.setScoreMultiplier(1);
