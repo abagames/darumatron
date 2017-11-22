@@ -7,7 +7,7 @@ let screen: g.Screen;
 let context: CanvasRenderingContext2D;
 
 window.onload = () => {
-  //initDb().then(() => {
+  //initDb();
   g.init();
   g.ui.useStickKeyAsButton();
   const game = new g.Game(160, 160, init, update);
@@ -17,11 +17,11 @@ window.onload = () => {
   canvas.setAttribute('style', null);
   canvas.setAttribute('id', 'main');
   ppe.options.canvas = canvas;
-  g.beginGames();
-  //});
+  g.titleGames();
+  //g.beginGames();
 };
 
-/*function initDb() {
+function initDb() {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   return window.fetch('/api/score', {
@@ -40,7 +40,7 @@ window.onload = () => {
     then(json => {
       console.log(json);
     });
-}*/
+}
 
 let player, floor;
 
@@ -49,7 +49,7 @@ function init() {
   player.pos.set(screen.size.x * 0.25, screen.size.y * 0.75);
   player.angle = -g.p.HALF_PI;
   _.times(7, i => {
-    const dr = new Daruma(i * 20 - 100, true);
+    const dr = new Daruma(i * 22 - 100, true);
   });
   floor = new Floor
     (g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
@@ -91,7 +91,7 @@ class Daruma extends g.Enemy {
 
   constructor(y, isFirst = false) {
     super();
-    this.getModule('RemoveWhenInAndOut').paddingOuter = 200;
+    this.getModule('RemoveWhenInAndOut').paddingOuter = 999;
     this.options.hasTrail = false;
     this.clearSpritePixels();
     let width = 6;

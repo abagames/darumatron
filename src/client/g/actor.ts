@@ -258,7 +258,11 @@ export class Wall extends Actor {
     const pt = [_.times(pw, () => 'o').join('')].concat(
       _.times(ph - 1, () => ['o'].concat(_.times(pw - 1, () => 'x')).join(''))
     );
-    this.addSpritePixels(pag.generate(pt, { isMirrorX: true, hue, seed }));
+    let options: any = { isMirrorX: true, hue };
+    if (seed != null) {
+      options.seed = seed;
+    }
+    this.addSpritePixels(pag.generate(pt, options));
     this.type = this.collisionType = 'wall';
     this.pos.set(pos);
     this.priority = 0.2;

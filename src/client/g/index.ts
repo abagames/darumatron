@@ -24,6 +24,10 @@ export enum Scene {
 export let scene = Scene.started;
 export let games: Game[] = [];
 export let game: Game;
+const title = 'DARUMATRON';
+const titleCont = null;
+const titleScale = 3;
+const titleHue = 0;
 let seedRandom: Random;
 let updatingCountPerFrame = 1;
 let isDebugEnabled = false;
@@ -72,17 +76,8 @@ export function beginGames(seed: number = null) {
   if (seed == null) {
     seed = seedRandom.getInt(9999999);
   }
-  setSeeds(seed);
   _.forEach(games, g => {
     g.begin(seed);
-  });
-}
-
-export function endGames() {
-  scene = Scene.ended;
-  ui.clearJustPressed();
-  _.forEach(games, g => {
-    g.end();
   });
 }
 
@@ -97,6 +92,13 @@ export function restartGames() {
   scene = Scene.started;
   _.forEach(games, g => {
     g.restart();
+  });
+}
+
+export function titleGames() {
+  scene = Scene.title;
+  _.forEach(games, g => {
+    g.title();
   });
 }
 
@@ -120,17 +122,7 @@ function setSeeds(seed: number) {
 }
 
 function update() {
-  if (scene === Scene.replay) {
-    /*const events = ir.getEvents();
-    if (events !== false) {
-      ui.updateInReplay(events);
-    } else {
-      replayGames();
-    }*/
-  } else {
-    ui.update();
-    //ir.recordEvents(ui.getReplayEvents());
-  }
+  handleScene();
   _.times(updatingCountPerFrame, i => {
     const hasScreen = i >= updatingCountPerFrame - 1;
     _.forEach(games, g => {
@@ -139,6 +131,40 @@ function update() {
     });
     //updateFunc();
   });
+}
+
+function handleScene() {
+  if ((scene === Scene.title && ui.isJustPressed)/* ||
+(scene === Scene.replay && ui._isPressedInReplay)*/) {
+    beginGames();
+  }
+  if (scene === Scene.started) {
+    if (_.every(games, g => g.scene === Scene.ended)) {
+      scene = Scene.ended;
+      ui.clearJustPressed();
+    }
+  }
+  const ticks = game == null ? 0 : game.ticks;
+  if (scene === Scene.ended &&
+    (ticks >= 60 || (ticks >= 20 && ui.isJustPressed))) {
+    titleGames();
+  }
+  /*if (scene === Scene.title && ticks >= 120) {
+    replayGames();
+  }
+  if (scene === Scene.replay) {
+    const events = ir.getEvents();
+    if (events !== false) {
+      ui.updateInReplay(events);
+    } else {
+      beginTitle();
+    }
+  } else {*/
+  ui.update();
+  /*if (options.isReplayEnabled && scene === Scene.game) {
+    ir.recordEvents(ui.getReplayEvents());
+  }*/
+  //}
 }
 
 export class Game {
@@ -213,6 +239,7 @@ export class Game {
 
   begin(seed: number) {
     this.clearGameStatus();
+    this.scene = Scene.started;
     this.random.setSeed(seed);
     if (this.initFunc != null) {
       this.initFunc(this);
@@ -240,6 +267,11 @@ export class Game {
 
   restart() {
     this.scene = Scene.started;
+  }
+
+  title() {
+    this.scene = Scene.title;
+    this.ticks = 0;
   }
 
   replay(status) {
@@ -296,7 +328,30 @@ export class Game {
     if (this.scoreMultiplier > 1) {
       text.draw(`X${this.scoreMultiplier}`, this.screen.size.x, 1, text.Align.right);
     }
+    this.drawSceneText();
     this.ticks++;
+  }
+
+  drawSceneText() {
+    switch (this.scene) {
+      case Scene.title:
+        text.drawScaled
+          (title, titleScale,
+          this.screen.size.x / 2, this.screen.size.y * 0.45, titleHue);
+        break;
+      case Scene.ended:
+        text.draw('GAME OVER', this.screen.size.x / 2, this.screen.size.y * 0.45);
+        break;
+      /*case Scene.replay:
+        if (this.ticks < 60) {
+          text.draw('REPLAY', this.screen.size.x / 2, this.screen.size.y * 0.4);
+          text.draw(`SCORE:${this.replayScore}`,
+          this.screen.size.x / 2, this.screen.size.y * 0.5);
+        } else {
+          text.draw('REPLAY', 0, this.screen.size.y - 6, text.Align.left);
+        }
+        break;*/
+    }
   }
 
   scroll(x: number, y: number = 0) {
