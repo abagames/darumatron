@@ -11,21 +11,11 @@ app.use(bodyParser.json());
 app.use(express.static('docs'));
 
 app.get('/api/score', (req, res) => {
-  res.json(leaderboard.getScores(false, req.query));
-});
-
-app.get('/api/currentScore', (req, res) => {
-  res.json(leaderboard.getScores(true, req.query));
+  res.json(leaderboard.getScores(req.query));
 });
 
 app.post('/api/score', (req: any, res) => {
   leaderboard.addScore(req.body);
-  res.send('');
-  setDbSavingTimeout();
-});
-
-app.post('/api/currentScore', (req: any, res) => {
-  leaderboard.addCurrentScore(req.body);
   res.send('');
   setDbSavingTimeout();
 });
@@ -47,7 +37,6 @@ function saveToDb() {
 
 const listener = app.listen(process.env.PORT, () => {
   db.init().then(() => {
-    setInterval(leaderboard.clearCurrentScores, 15 * 1000);
     console.log(`darumatron server ready. port: ${listener.address().port}`);
   });
 });

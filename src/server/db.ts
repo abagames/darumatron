@@ -38,7 +38,6 @@ export function init() {
     return load();
   }).catch(err => {
     console.log(`sqlite init error: ${err}`);
-    return leaderboard.setup();
   });
 }
 
