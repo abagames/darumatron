@@ -63,9 +63,10 @@ export enum Align {
 }
 
 export function draw
-  (str: string, x: number, y: number, align: Align = null, game: g.Game = g.game) {
+  (str: string, x: number, y: number,
+  align: Align = null, fillStyle = 'white', game: g.Game = g.game) {
   const context = game.screen.context;
-  context.fillStyle = 'white';
+  context.fillStyle = fillStyle;
   if (align === Align.left) {
   } else if (align === Align.right) {
     x -= str.length * 5;
@@ -132,9 +133,6 @@ function generatePixels(str: string, scale: number, hue: number = null) {
   if (hue != null) {
     pagOptions.hue = hue;
   }
-  /*if (g.options.isLimitingColors) {
-    pagOptions.colorLighting = 0;
-  }*/
   const pixels = pag.generate(_.map(pixelArray, line => line.join('')), pagOptions);
   textPixels[key] = pixels;
   return pixels;

@@ -314,7 +314,8 @@ export class Text extends Actor {
   update() {
     super.update();
     this.vel.mult(0.9);
-    g.text.draw(this.str, this.pos.x, this.pos.y, this.align, this.game);
+    g.text.draw
+      (this.str, this.pos.x, this.pos.y, this.align, 'white', this.game);
     if (this.ticks >= this.duration) {
       this.remove();
     }

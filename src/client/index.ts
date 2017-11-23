@@ -8,7 +8,6 @@ let screen: g.Screen;
 let context: CanvasRenderingContext2D;
 
 window.onload = () => {
-  //initDb();
   g.init(() => {
     g.ui.useStickKeyAsButton();
     const game = new g.Game(160, 160, begin, update);
@@ -19,55 +18,12 @@ window.onload = () => {
     canvas.setAttribute('id', 'main');
     ppe.options.canvas = canvas;
     createSounds();
-    g.enableDebug(() => {
+    /*(g.enableDebug(() => {
       bgmSound.stop();
       createSounds();
-    });
+    });*/
   }, 110);
 };
-
-function initDb() {
-  const headers = new Headers();
-  headers.append('Content-Type', 'application/json');
-  const playerId = 1;
-  const name = 'foo';
-  let score = Math.floor(Math.random() * 120 + 900);
-  return window.fetch('/api/currentScore', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      playerId,
-      name,
-      score
-    })
-  }).
-    then(() => {
-      score += Math.floor(Math.random() * 100);
-      return window.fetch('/api/score', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          playerId,
-          name,
-          score
-        })
-      })
-    }).
-    then(() => {
-      setTimeout(() => {
-        window.fetch('/api/currentScore').
-          then(result => result.json()).
-          then(json => {
-            console.log(json);
-          });
-      }, 20 * 1000);
-      return window.fetch('/api/currentScore?count=10&score=500');
-    }).
-    then(result => result.json()).
-    then(json => {
-      console.log(json);
-    });
-}
 
 let startSound: g.Sound;
 let bgmSound: g.Sound;
@@ -93,8 +49,8 @@ function createSounds() {
   endSound = createSe(60, 8);
 }
 
-function createSe(bn, cl, vl = 0) {
-  const se = new g.Sound(true, false, cl, 8, bn, vl);
+function createSe(baseNote, cordLength, volume = 0) {
+  const se = new g.Sound(true, false, cordLength, 8, baseNote, volume);
   se.createPartsBase();
   se.createPart();
   se.createPart(-2, 2);

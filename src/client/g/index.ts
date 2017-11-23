@@ -9,6 +9,7 @@ import * as ui from './ui';
 import * as text from './text';
 import * as debug from './debug';
 import * as util from './util';
+import * as leaderboard from './leaderboard';
 export { Random, Sound, ui, text, debug };
 export * from './util';
 export * from './actor';
@@ -35,6 +36,7 @@ let isDebugEnabled = false;
 let onSeedChangedFunc: Function;
 
 export function init(initFunc: Function = null, tempo = 120) {
+  leaderboard.init();
   pag.setDefaultOptions({
     isMirrorY: true,
     rotationNum,
@@ -268,6 +270,7 @@ export class Game {
     let isReplay = this.scene === Scene.replay;
     this.scene = Scene.ended;
     this.ticks = 0;
+    leaderboard.set(this.score);
     //sss.stopBgm();
     /*if (!isReplay && options.isReplayEnabled) {
       initialStatus.s = score;
@@ -339,9 +342,10 @@ export class Game {
     if (this.updateFunc != null) {
       this.updateFunc();
     }
-    text.draw(`${this.score}`, 1, 1, text.Align.left, this);
+    text.draw(`${this.score}`, 1, 1, text.Align.left);
     if (this.scoreMultiplier > 1) {
-      text.draw(`X${this.scoreMultiplier}`, this.screen.size.x, 1, text.Align.right);
+      text.draw
+        (`X${this.scoreMultiplier}`, this.screen.size.x, 1, text.Align.right);
     }
     this.drawSceneText();
     this.ticks++;
@@ -352,7 +356,8 @@ export class Game {
       case Scene.title:
         text.drawScaled
           (title, titleScale,
-          this.screen.size.x / 2, this.screen.size.y * 0.45, titleHue);
+          this.screen.size.x / 2, 20, titleHue);
+        this.drawLeaderboard();
         break;
       case Scene.ended:
         text.draw('GAME OVER', this.screen.size.x / 2, this.screen.size.y * 0.45);
@@ -367,6 +372,47 @@ export class Game {
         }
         break;*/
     }
+  }
+
+  leaderboardTypes = ['LAST', 'BEST', 'TOP'];
+  rankStrings = ['ST', 'ND', 'RD'];
+
+  drawLeaderboard() {
+    const tt = Math.floor(this.ticks / 300) % 3;
+    const t = this.ticks % 300;
+    if (t === 0) {
+      switch (tt) {
+        case 0:
+          leaderboard.get(true);
+          break;
+        case 1:
+          leaderboard.get(false, true);
+          break;
+        case 2:
+          leaderboard.get();
+          break;
+      }
+    }
+    if (leaderboard.scores == null) {
+      return;
+    }
+    text.draw(this.leaderboardTypes[tt], this.screen.size.x / 2, 40);
+    _.forEach(leaderboard.scores, (s, i) => {
+      const y = 50 + i * 10;
+      let fillStyle = '#fff';
+      if (s.playerId === leaderboard.playerId) {
+        fillStyle = s.rank == null ? '#77f' : '#f77';
+        text.draw
+          ('YOU', this.screen.size.x * 0.1, y, text.Align.left, fillStyle);
+      }
+      if (s.rank != null) {
+        const rs =
+          `${s.rank + 1}${(s.rank < 3) ? this.rankStrings[s.rank] : 'TH'}`;
+        text.draw(rs, this.screen.size.x * 0.4, y, text.Align.right, fillStyle);
+      }
+      text.draw(String(s.score), this.screen.size.x * 0.9, y,
+        text.Align.right, fillStyle);
+    });
   }
 
   scroll(x: number, y: number = 0) {

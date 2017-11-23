@@ -20,6 +20,10 @@ app.post('/api/score', (req: any, res) => {
   setDbSavingTimeout();
 });
 
+app.get('/api/nextPlayerId', (req, res) => {
+  res.json(leaderboard.getNextPlayerId());
+});
+
 let dbSavingTimeout;
 
 function setDbSavingTimeout() {

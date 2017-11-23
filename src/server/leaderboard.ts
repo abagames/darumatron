@@ -3,7 +3,6 @@ import * as db from './db';
 
 class Score {
   playerId: number;
-  name: string;
   score: number;
   time: number;
   rank: number;
@@ -20,7 +19,6 @@ export function init(dbScores) {
     }
     return {
       playerId: s.playerId,
-      name: s.name,
       score: s.score,
       rank: s.rank,
       time: s.time
@@ -39,12 +37,19 @@ export function getScores(query: any) {
   }
   let startIndex = 0;
   if (query.score != null) {
-    const scoreIndex = _.sortedIndexBy
-      (scores, { score: Number(query.score) }, s => -s.score);
+    const score = Number(query.score);
+    const scoreIndex = _.sortedIndexBy(scores, { score }, s => -s.score);
     startIndex = scoreIndex - Math.floor(count / 2);
-    if (startIndex < 0) {
-      startIndex = 0;
+  }
+  if (query.playerId != null) {
+    const playerId = Number(query.playerId);
+    const bestIndex = _.findIndex(scores, s => s.playerId === playerId);
+    if (bestIndex >= 0) {
+      startIndex = bestIndex - Math.floor(count / 2);
     }
+  }
+  if (startIndex < 0) {
+    startIndex = 0;
   }
   if (count + startIndex >= scores.length) {
     startIndex -= count + startIndex - scores.length - 1;
