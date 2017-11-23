@@ -84,5 +84,7 @@ function insertScore(_scores, data) {
 }
 
 export function getNextPlayerId() {
-  return nextPlayerId;
+  const result = nextPlayerId;
+  nextPlayerId++;
+  return result;
 }
