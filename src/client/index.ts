@@ -88,8 +88,8 @@ function createSounds() {
   bgmSound.createPartsBase(0.25, 0, 1);
   bgmSound.createPart();
   bgmSound.createPart(-2);
-  shotSound = createSe(50, 1, -5);
-  itemSound = createSe(75, 3, -3);
+  shotSound = createSe(50, 1, -8);
+  itemSound = createSe(70, 3, -3);
   endSound = createSe(60, 8);
 }
 

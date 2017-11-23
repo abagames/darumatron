@@ -40,7 +40,7 @@ export function init(initFunc: Function = null, tempo = 120) {
     rotationNum,
     scale: 3
   });
-  //limitColors();
+  limitColors();
   new p5((_p: p5) => {
     p = _p;
     p.setup = () => {
