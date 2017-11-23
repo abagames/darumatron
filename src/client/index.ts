@@ -2,23 +2,28 @@ import * as _ from 'lodash';
 import * as pag from 'pag';
 import * as ppe from 'ppe';
 import * as g from './g/index';
+import { beginGames } from './g/index';
 
 let screen: g.Screen;
 let context: CanvasRenderingContext2D;
 
 window.onload = () => {
   //initDb();
-  g.init();
-  g.ui.useStickKeyAsButton();
-  const game = new g.Game(160, 160, init, update);
-  const canvas = game.screen.canvas;
-  screen = game.screen;
-  context = screen.context;
-  canvas.setAttribute('style', null);
-  canvas.setAttribute('id', 'main');
-  ppe.options.canvas = canvas;
-  g.titleGames();
-  //g.beginGames();
+  g.init(() => {
+    g.ui.useStickKeyAsButton();
+    const game = new g.Game(160, 160, begin, update);
+    const canvas = game.screen.canvas;
+    screen = game.screen;
+    context = screen.context;
+    canvas.setAttribute('style', null);
+    canvas.setAttribute('id', 'main');
+    ppe.options.canvas = canvas;
+    createSounds();
+    g.enableDebug(() => {
+      bgmSound.stop();
+      createSounds();
+    });
+  }, 110);
 };
 
 function initDb() {
@@ -64,9 +69,43 @@ function initDb() {
     });
 }
 
+let startSound: g.Sound;
+let bgmSound: g.Sound;
+let shotSound: g.Sound;
+let itemSound: g.Sound;
+let endSound: g.Sound;
+
+function createSounds() {
+  startSound = new g.Sound(false, false, 4, 1, 65);
+  startSound.createPartsBase()
+  startSound.createPart();
+  startSound.createPart(-1, 1);
+  startSound.createPartsBase(0, 0, 1);
+  startSound.createPart(-3, 0, 2);
+  startSound.createPartsBase(0.25, 0, 1);
+  startSound.createPart(-4);
+  bgmSound = new g.Sound(false, true, 16, 1, 50, -8);
+  bgmSound.createPartsBase(0.25, 0, 1);
+  bgmSound.createPart();
+  bgmSound.createPart(-2);
+  shotSound = createSe(50, 1, -5);
+  itemSound = createSe(75, 3, -3);
+  endSound = createSe(60, 8);
+}
+
+function createSe(bn, cl, vl = 0) {
+  const se = new g.Sound(true, false, cl, 8, bn, vl);
+  se.createPartsBase();
+  se.createPart();
+  se.createPart(-2, 2);
+  se.createPartsBase();
+  se.createPart(-4, 4);
+  return se;
+}
+
 let player, floor;
 
-function init() {
+function begin() {
   player = new Player();
   player.pos.set(screen.size.x * 0.25, screen.size.y * 0.75);
   player.angle = -g.p.HALF_PI;
@@ -76,6 +115,7 @@ function init() {
   floor = new Floor
     (g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
   floor.priority = -1;
+  startSound.play();
 }
 
 function update() {
@@ -88,13 +128,22 @@ function update() {
   if (g.game.scene === g.Scene.title && g.game.random.get() < 0.02) {
     new Daruma()
   }
+  if (g.game.scene === g.Scene.started && g.game.ticks === 120) {
+    bgmSound.play();
+  }
 }
 
 class Player extends g.Player {
+  constructor() {
+    super();
+    this.collision.set(20, 20);
+  }
+
   update() {
     super.update();
     this.options.hasTrail = false;
     if (g.ui.isJustPressed && g.ui.stickAngle > 0) {
+      shotSound.play();
       let a;
       if (g.ui.stickAngle > 4) {
         this.pos.x = screen.size.x / 4;
@@ -103,7 +152,8 @@ class Player extends g.Player {
         this.pos.x = screen.size.x / 4 * 3;
         a = g.p.PI;
       }
-      new g.Shot(this, 10, a);
+      const s = new g.Shot(this, 10, a);
+      s.collision.set(3, 3);
     }
     this.pos.y = floor.pos.y - 15;
     if (this.pos.y > 152) {
@@ -112,6 +162,8 @@ class Player extends g.Player {
   }
 
   destroy() {
+    endSound.play('@0:0:1');
+    bgmSound.stop();
     super.destroy();
     floor.destroy();
     g.game.setScoreMultiplier(1);
@@ -184,6 +236,7 @@ class Item extends g.Item {
   }
 
   destroy() {
+    itemSound.play();
     super.destroy();
     if (g.game.scoreMultiplier < 100) {
       g.game.addScoreMultiplier(10);

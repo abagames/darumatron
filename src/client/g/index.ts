@@ -4,11 +4,12 @@ import * as ppe from 'ppe';
 
 import { Actor, Text, rotationNum } from './actor';
 import Random from './random';
+import { Sound, initSound, setSoundSeed } from './sound';
 import * as ui from './ui';
 import * as text from './text';
 import * as debug from './debug';
 import * as util from './util';
-export { Random, ui, text, debug };
+export { Random, Sound, ui, text, debug };
 export * from './util';
 export * from './actor';
 export * from './modules';
@@ -31,8 +32,9 @@ const titleHue = 0;
 let seedRandom: Random;
 let updatingCountPerFrame = 1;
 let isDebugEnabled = false;
+let onSeedChangedFunc: Function;
 
-export function init() {
+export function init(initFunc: Function = null, tempo = 120) {
   pag.setDefaultOptions({
     isMirrorY: true,
     rotationNum,
@@ -44,7 +46,16 @@ export function init() {
     p.setup = () => {
       p.createCanvas(0, 0);
       text.init();
+      initSound(tempo);
       seedRandom = new Random();
+      if (initFunc != null) {
+        initFunc();
+      }
+      if (isDebugEnabled) {
+        beginGames();
+      } else {
+        titleGames();
+      }
     };
     p.draw = update;
   });
@@ -60,8 +71,8 @@ function limitColors() {
 }
 
 export function enableDebug(_onSeedChangedFunc = null) {
-  //onSeedChangedFunc = _onSeedChangedFunc;
-  debug.initSeedUi(this.setSeeds);
+  onSeedChangedFunc = _onSeedChangedFunc;
+  debug.initSeedUi(setGenerationSeeds);
   debug.enableShowingErrors();
   isDebugEnabled = true;
 }
@@ -115,10 +126,14 @@ export function replayGames() {
   }*/
 }
 
-function setSeeds(seed: number) {
+function setGenerationSeeds(seed: number) {
   pag.setSeed(seed);
   ppe.setSeed(seed);
   ppe.reset();
+  setSoundSeed(seed);
+  if (onSeedChangedFunc != null) {
+    onSeedChangedFunc();
+  }
 }
 
 function update() {
@@ -183,7 +198,7 @@ export class Game {
   hasScreen = true;
 
   constructor(width: number, height: number,
-    public initFunc: Function = null, public updateFunc: Function = null) {
+    public beginFunc: Function = null, public updateFunc: Function = null) {
     this.random = new Random();
     new p5((_p: p5) => {
       this.p = _p;
@@ -241,8 +256,8 @@ export class Game {
     this.clearGameStatus();
     this.scene = Scene.started;
     this.random.setSeed(seed);
-    if (this.initFunc != null) {
-      this.initFunc(this);
+    if (this.beginFunc != null) {
+      this.beginFunc(this);
     }
   }
 
