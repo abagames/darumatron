@@ -72,6 +72,9 @@ function begin() {
   floor = new Floor
     (g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
   floor.priority = -1;
+  for (let i = 0; i < 50; i++) {
+    new g.Star(0.2, 3, 0, 0);
+  }
   startSound.play();
 }
 
@@ -124,7 +127,7 @@ class Player extends g.Player {
       }
       if (a != null) {
         shotSound.play();
-        const s = new g.Shot(this, 10, a);
+        const s = new g.Shot(this, 10, a, { hasTrail: true });
         s.collision.set(3, 3);
       }
     }

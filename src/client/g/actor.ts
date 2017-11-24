@@ -191,8 +191,9 @@ export class Enemy extends Actor {
 }
 
 export class Shot extends Actor {
-  constructor(actor, speed = 2, angle = null) {
-    super({ hasTrail: true, hasMuzzleEffect: true }, actor.game);
+  constructor(actor, speed = 2, angle = null,
+    options: any = { hasTrail: true, hasMuzzleEffect: true }) {
+    super(options, actor.game);
     this.type = this.collisionType = 'shot';
     this.addSpritePixels(pag.generate(['xxx'], { hue: 0.4 }));
     this.pos.set(actor.pos);
