@@ -115,19 +115,6 @@ export function titleGames() {
   });
 }
 
-export function replayGames() {
-  scene = Scene.replay;
-  ui.clearJustPressed();
-  /*if (options.isReplayEnabled) {
-  const status = ir.startReplay();
-  if (status !== false) {
-    _.forEach(games, g => {
-      g.replay(status);
-    });
-  }
-  }*/
-}
-
 function setGenerationSeeds(seed: number) {
   pag.setSeed(seed);
   ppe.setSeed(seed);
@@ -146,7 +133,6 @@ function update() {
       g.hasScreen = hasScreen;
       g.update();
     });
-    //updateFunc();
   });
 }
 
@@ -166,22 +152,7 @@ function handleScene() {
     (ticks >= 60 || (ticks >= 20 && ui.isJustPressed))) {
     titleGames();
   }
-  /*if (scene === Scene.title && ticks >= 120) {
-    replayGames();
-  }
-  if (scene === Scene.replay) {
-    const events = ir.getEvents();
-    if (events !== false) {
-      ui.updateInReplay(events);
-    } else {
-      beginTitle();
-    }
-  } else {*/
   ui.update();
-  /*if (options.isReplayEnabled && scene === Scene.game) {
-    ir.recordEvents(ui.getReplayEvents());
-  }*/
-  //}
 }
 
 export class Game {
@@ -271,12 +242,6 @@ export class Game {
     this.scene = Scene.ended;
     this.ticks = 0;
     leaderboard.set(this.score);
-    //sss.stopBgm();
-    /*if (!isReplay && options.isReplayEnabled) {
-      initialStatus.s = score;
-      ir.recordInitialStatus(initialStatus);
-      ir.saveAsUrl();
-    }*/
   }
 
   pause() {
@@ -290,14 +255,6 @@ export class Game {
   title() {
     this.scene = Scene.title;
     this.ticks = 0;
-  }
-
-  replay(status) {
-    /*this.clearGameStatus();
-    this.scene = Scene.replay;
-    this.random.setSeed(status.r);
-    this.replayScore = status.s;
-    initGameFunc();*/
   }
 
   clearGameStatus() {
@@ -362,15 +319,6 @@ export class Game {
       case Scene.ended:
         text.draw('GAME OVER', this.screen.size.x / 2, this.screen.size.y * 0.45);
         break;
-      /*case Scene.replay:
-        if (this.ticks < 60) {
-          text.draw('REPLAY', this.screen.size.x / 2, this.screen.size.y * 0.4);
-          text.draw(`SCORE:${this.replayScore}`,
-          this.screen.size.x / 2, this.screen.size.y * 0.5);
-        } else {
-          text.draw('REPLAY', 0, this.screen.size.y - 6, text.Align.left);
-        }
-        break;*/
     }
   }
 
@@ -479,23 +427,6 @@ export class ActorPool {
 
   getByCollisionType(collisionType: string) {
     return _.filter<Actor>(this.actors, a => a.collisionType == collisionType);
-  }
-
-  getReplayStatus() {
-    let status = [];
-    /*_.forEach(this.actors, (a: Actor) => {
-      let array = a.getReplayStatus();
-      if (array != null) {
-        status.push([a.type, array]);
-      }
-    });*/
-    return status;
-  }
-
-  setReplayStatus(status: any[], actorGeneratorFunc) {
-    _.forEach(status, s => {
-      actorGeneratorFunc(s[0], s[1]);
-    });
   }
 }
 

@@ -111,35 +111,3 @@ function calcCursorPos(x, y, v) {
 function onCursorUp(e) {
   isCursorDown = false;
 }
-
-/*export function updateInReplay(events: string) {
-  const pp = isPressed;
-  _isPressedInReplay = false;
-  _.forEach(buttonKeys, k => {
-    if (isKeyPressing[k]) {
-      _isPressedInReplay = true;
-      return false;
-    }
-  });
-  let rn = events.charCodeAt(0) - 'a'.charCodeAt(0);
-  if (rn > 10) {
-    isPressed = true;
-    rn -= 10;
-  } else {
-    isPressed = false;
-  }
-  stickAngle = rn;
-  g.Point.set(stick);
-  if (stickAngle > 0) {
-    g.Point.addAngle(stick, stickAngle * g.HALF_PI / 2, 1);
-  }
-  isJustPressed = (!pp && isPressed);
-}
-
-export function getReplayEvents() {
-  let rn = stickAngle;
-  if (isPressed) {
-    rn += 10;
-  }
-  return String.fromCharCode('a'.charCodeAt(0) + rn);
-}*/

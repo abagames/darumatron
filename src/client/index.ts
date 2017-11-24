@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import * as pag from 'pag';
 import * as ppe from 'ppe';
 import * as g from './g/index';
-import { beginGames } from './g/index';
 
 let screen: g.Screen;
 let context: CanvasRenderingContext2D;

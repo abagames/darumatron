@@ -164,17 +164,6 @@ export class Actor {
     this.modules.splice(i, 0, module);
     this.moduleNames.splice(i, 0, g.getClassName(module));
   }
-
-  /*getReplayStatus() {
-    if (this.replayPropertyNames == null) {
-      return null;
-    }
-    return ir.objectToArray(this, this.replayPropertyNames);
-  }
-
-  setReplayStatus(status) {
-    ir.arrayToObject(status, this.replayPropertyNames, this);
-  }*/
 }
 
 export class Player extends Actor {
