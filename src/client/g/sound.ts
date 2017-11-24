@@ -14,10 +14,13 @@ export function setSoundSeed(seed: number) {
 }
 
 export class Sound {
+  volumeNode;
+
   constructor
     (public isSe = false, public isLooping = false,
     public cordLength = 8, public speed = 1, public baseNote = 60,
-    public volume = 0) {
+    volume = 0) {
+    this.volumeNode = new Tone.Volume(volume).toMaster();
     this.initParts();
   }
 
@@ -152,8 +155,7 @@ export class Sound {
         type: 'sawtooth'
       }
     });
-    const v = new Tone.Volume(this.volume).toMaster();
-    const synth = s.chain(v);
+    const synth = s.chain(this.volumeNode);
     const part = new Tone.Part((time, event) => {
       synth.triggerAttackRelease(event.note, event.dur, time);
     }, notes);
