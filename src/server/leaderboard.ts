@@ -50,13 +50,13 @@ export function getScores(query) {
   if (startIndex < 0) {
     startIndex = 0;
   }
-  if (count + startIndex >= scores.length) {
-    startIndex -= count + startIndex - scores.length - 1;
+  if (count + startIndex > scores.length) {
+    startIndex -= count + startIndex - scores.length;
     if (startIndex < 0) {
       startIndex = 0;
     }
   }
-  if (count + startIndex >= scores.length) {
+  if (count + startIndex > scores.length) {
     count = scores.length - startIndex;
   }
   return _.times(count, i => scores[i + startIndex]);
