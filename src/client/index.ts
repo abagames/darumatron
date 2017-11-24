@@ -237,6 +237,6 @@ class Floor extends g.Wall {
       this.pos.y += (120 - this.pos.y) * 0.1;
       this.vel.y *= 0.5;
     }
-    this.vel.y += 0.0075 * g.getDifficulty();
+    this.vel.y += 0.005 * g.getDifficulty();
   }
 }
