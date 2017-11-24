@@ -5,6 +5,12 @@ module.exports = function (env) {
       path: __dirname + '/docs',
       filename: 'bundle.js'
     },
+    externals: {
+      "tone": "Tone",
+      "p5": "p5",
+      "lodash": "_",
+      "lz-string": "LZString"
+    },
     resolve: {
       extensions: ['.ts', '.js'],
       modules: ['node_modules', 'web_modules']
