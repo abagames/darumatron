@@ -24,6 +24,7 @@ export function init(_canvas: HTMLCanvasElement, _pixelSize: p5.Vector) {
     onCursorDown(e.pageX, e.pageY);
   };
   document.ontouchstart = (e) => {
+    e.preventDefault();
     playEmptySound();
     onCursorDown(e.touches[0].pageX, e.touches[0].pageY);
   };
@@ -38,6 +39,7 @@ export function init(_canvas: HTMLCanvasElement, _pixelSize: p5.Vector) {
     onCursorUp(e);
   };
   document.ontouchend = (e) => {
+    e.preventDefault();
     onCursorUp(e);
   };
   document.onkeydown = (e) => {
