@@ -452,7 +452,7 @@ export class Screen {
   }
 
   clear() {
-    this.p.background(0);
+    this.p.background('black');
   }
 
   remove() {
