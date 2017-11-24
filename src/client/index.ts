@@ -98,18 +98,23 @@ class Player extends g.Player {
   update() {
     super.update();
     this.options.hasTrail = false;
-    if (g.ui.isJustPressed && g.ui.stickAngle > 0) {
-      shotSound.play();
+    if (g.ui.isJustPressed) {
       let a;
-      if (g.ui.stickAngle > 4) {
+      if (g.ui.stickAngle > 4 ||
+        (g.ui.isCursorDown && g.ui.cursorPos.x < screen.size.x / 2)) {
         this.pos.x = screen.size.x / 4;
         a = 0;
-      } else {
+      }
+      if (g.ui.stickAngle > 0 && g.ui.stickAngle <= 4 ||
+        (g.ui.isCursorDown && g.ui.cursorPos.x >= screen.size.x / 2)) {
         this.pos.x = screen.size.x / 4 * 3;
         a = g.p.PI;
       }
-      const s = new g.Shot(this, 10, a);
-      s.collision.set(3, 3);
+      if (a != null) {
+        shotSound.play();
+        const s = new g.Shot(this, 10, a);
+        s.collision.set(3, 3);
+      }
     }
     this.pos.y = floor.pos.y - 15;
     if (this.pos.y > 152) {

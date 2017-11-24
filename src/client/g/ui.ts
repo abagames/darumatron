@@ -6,9 +6,9 @@ export let isPressed = false;
 export let isJustPressed = false;
 export let stick: p5.Vector;
 export let stickAngle: number;
+export let isCursorDown = false;
 let canvas: HTMLCanvasElement;
 let pixelSize: p5.Vector;
-let isCursorDown = false;
 let isInitialized = false;
 let isUsingStickKeysAsButton: boolean;
 const isKeyPressing = _.times(256, () => false);
@@ -20,23 +20,23 @@ export function init(_canvas: HTMLCanvasElement, _pixelSize: p5.Vector) {
   canvas = _canvas;
   pixelSize = _pixelSize;
   document.onmousedown = (e) => {
-    onMouseTouchDown(e.pageX, e.pageY);
+    onCursorDown(e.pageX, e.pageY);
   };
   document.ontouchstart = (e) => {
-    onMouseTouchDown(e.touches[0].pageX, e.touches[0].pageY);
+    onCursorDown(e.touches[0].pageX, e.touches[0].pageY);
   };
   document.onmousemove = (e) => {
-    onMouseTouchMove(e.pageX, e.pageY);
+    onCursorMove(e.pageX, e.pageY);
   };
   document.ontouchmove = (e) => {
     e.preventDefault();
-    onMouseTouchMove(e.touches[0].pageX, e.touches[0].pageY);
+    onCursorMove(e.touches[0].pageX, e.touches[0].pageY);
   };
   document.onmouseup = (e) => {
-    onMouseTouchUp(e);
+    onCursorUp(e);
   };
   document.ontouchend = (e) => {
-    onMouseTouchUp(e);
+    onCursorUp(e);
   };
   document.onkeydown = (e) => {
     isKeyPressing[e.keyCode] = true;
@@ -94,12 +94,12 @@ export function update() {
   isJustPressed = (!pp && isPressed);
 }
 
-function onMouseTouchDown(x, y) {
+function onCursorDown(x, y) {
   calcCursorPos(x, y, cursorPos);
   isCursorDown = true;
 }
 
-function onMouseTouchMove(x, y) {
+function onCursorMove(x, y) {
   calcCursorPos(x, y, cursorPos);
 }
 
@@ -108,7 +108,7 @@ function calcCursorPos(x, y, v) {
   v.y = ((y - canvas.offsetTop) / canvas.clientHeight + 0.5) * pixelSize.y;
 }
 
-function onMouseTouchUp(e) {
+function onCursorUp(e) {
   isCursorDown = false;
 }
 
