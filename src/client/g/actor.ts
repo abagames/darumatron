@@ -298,6 +298,7 @@ export class Text extends Actor {
     (public str: string, public duration = 30,
     public align: g.text.Align = null, game: g.Game = g.game) {
     super({}, game);
+    this.priority = 1.5;
   }
 
   update() {

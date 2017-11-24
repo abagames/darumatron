@@ -5,6 +5,7 @@ import * as g from './g/index';
 
 let screen: g.Screen;
 let context: CanvasRenderingContext2D;
+let showingInstructionCount = 300;
 
 window.onload = () => {
   g.init(() => {
@@ -83,8 +84,19 @@ function update() {
   if (g.game.scene === g.Scene.title && g.game.random.get() < 0.02) {
     new Daruma()
   }
-  if (g.game.scene === g.Scene.started && g.game.ticks === 120) {
-    bgmSound.play();
+  if (g.game.scene === g.Scene.started) {
+    if (g.game.ticks === 120) {
+      bgmSound.play();
+    }
+    if (showingInstructionCount > 0 && g.game.ticks === 10) {
+      new g.Text('PRESS [l][r] OR', 150).pos.
+        set(screen.size.x / 2, 20);
+      new g.Text('TAP LEFT/RIGHT HALF OF SCREEN', 150).pos.
+        set(screen.size.x / 2, 30);
+      new g.Text('TO MOVE AND SHOT', 150).pos.
+        set(screen.size.x / 2, 40);
+    }
+    showingInstructionCount--;
   }
 }
 
