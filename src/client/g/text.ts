@@ -78,7 +78,7 @@ export function draw
   for (let i = 0; i < str.length; i++) {
     const idx = charToIndex[str.charCodeAt(i)];
     if (idx === -2) {
-      throw `invalid char: ${str.charAt(i)}`;
+      console.error(`invalid char: ${str.charAt(i)}`);
     } else if (idx >= 0) {
       drawLetter(context, idx, x, y);
     }
