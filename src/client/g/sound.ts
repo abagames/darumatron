@@ -2,6 +2,7 @@ import * as Tone from 'tone';
 import * as g from './index';
 
 let random: g.Random;
+let isEmptySoundPlayed = false;
 
 export function initSound(bpm = 120) {
   random = new g.Random();
@@ -11,6 +12,22 @@ export function initSound(bpm = 120) {
 
 export function setSoundSeed(seed: number) {
   random.setSeed(seed);
+}
+
+export function playEmptySound() {
+  if (isEmptySoundPlayed) {
+    return;
+  }
+  const context = Tone.context;
+  const buffer = context.createBuffer(1, 1, context.sampleRate);
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.connect(context.destination);
+  source.start(0);
+  if (context.resume) {
+    context.resume();
+  }
+  isEmptySoundPlayed = true;
 }
 
 export class Sound {

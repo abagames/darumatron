@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as g from './index';
+import { playEmptySound } from './sound';
 
 export let cursorPos: p5.Vector;
 export let isPressed = false;
@@ -23,6 +24,7 @@ export function init(_canvas: HTMLCanvasElement, _pixelSize: p5.Vector) {
     onCursorDown(e.pageX, e.pageY);
   };
   document.ontouchstart = (e) => {
+    playEmptySound();
     onCursorDown(e.touches[0].pageX, e.touches[0].pageY);
   };
   document.onmousemove = (e) => {
