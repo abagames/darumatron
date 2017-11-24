@@ -17,8 +17,9 @@ window.onload = () => {
     canvas.setAttribute('style', null);
     canvas.setAttribute('id', 'main');
     ppe.options.canvas = canvas;
+    g.setGenerationSeeds(1194484);
     createSounds();
-    /*(g.enableDebug(() => {
+    /*g.enableDebug(() => {
       bgmSound.stop();
       createSounds();
     });*/
