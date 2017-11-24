@@ -47,8 +47,8 @@ function load() {
   });
 }
 
-export function save(scores: any[]) {
-  return Score.sync({ force: true }).then(() =>
+export function save(scores) {
+  return Score.sync({ force: true }).then(() => {
     Score.bulkCreate(scores)
-  );
+  });
 }

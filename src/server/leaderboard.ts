@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as db from './db';
+import * as LZString from 'lz-string';
 
 class Score {
   playerId: number;
@@ -8,15 +9,12 @@ class Score {
   rank: number;
 }
 
-const scoresCount = 100;
 let scores: Score[] = [];
 let nextPlayerId = 0;
+let keys: any = {};
 
 export function init(dbScores) {
   scores = _.map(dbScores, (s: any, i) => {
-    if (s.playerId > nextPlayerId - 1) {
-      nextPlayerId = s.playerId + 1;
-    }
     return {
       playerId: s.playerId,
       score: s.score,
@@ -24,13 +22,14 @@ export function init(dbScores) {
       time: s.time
     };
   });
+  nextPlayerId = _.maxBy(scores, s => s.playerId).playerId + 1;
 }
 
 export function saveToDb() {
   return db.save(scores);
 }
 
-export function getScores(query: any) {
+export function getScores(query) {
   let count = 10;
   if (query.count != null) {
     count = Number(query.count);
@@ -63,11 +62,19 @@ export function getScores(query: any) {
   return _.times(count, i => scores[i + startIndex]);
 }
 
-export function addScore(data) {
-  const best = _.find(scores, s => s.playerId === data.playerId);
-  if (best == null || data.score > best.score) {
-    data.time = new Date().getTime();
-    scores = insertScore(scores, data);
+export function setScore(body) {
+  const data =
+    JSON.parse(LZString.decompressFromEncodedURIComponent(body.data));
+  const key = data.key;
+  const score = data.score;
+  const playerId = score.playerId;
+  if (key == null || playerId == null) {
+    return;
+  }
+  const best = _.find(scores, s => s.playerId === playerId);
+  if (best == null || score.score > best.score) {
+    score.time = new Date().getTime();
+    scores = insertScore(scores, score);
     scores = _.map(scores, (s, i) => {
       s.rank = i;
       return s;
@@ -75,16 +82,25 @@ export function addScore(data) {
   }
 }
 
-function insertScore(_scores, data) {
-  _scores = _.filter(_scores, s => s.playerId !== data.playerId);
+function insertScore(_scores, score) {
+  _scores = _.filter(_scores, s => s.playerId !== score.playerId);
   const insertIndex = _.sortedIndexBy
-    (_scores, { score: data.score }, s => -s.score);
-  _scores.splice(insertIndex, 0, data);
+    (_scores, { score: score.score }, s => -s.score);
+  _scores.splice(insertIndex, 0, score);
   return _scores;
 }
 
 export function getNextPlayerId() {
   const result = nextPlayerId;
   nextPlayerId++;
-  return result;
+  return { id: result };
+}
+
+export function getKey(query) {
+  if (query.playerId == null) {
+    return { key: null };
+  }
+  const key = (Math.random() + 1).toString(36).substring(7);
+  keys[query.playerId] = key;
+  return { key };
 }

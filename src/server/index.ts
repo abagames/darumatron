@@ -3,6 +3,10 @@ import * as bodyParser from 'body-parser';
 import * as leaderboard from './leaderboard';
 import * as db from './db';
 
+process.on('uncaughtException', (e) => {
+  console.error('uncaughtException: ' + e);
+});
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,13 +19,17 @@ app.get('/api/score', (req, res) => {
 });
 
 app.post('/api/score', (req: any, res) => {
-  leaderboard.addScore(req.body);
+  leaderboard.setScore(req.body);
   res.send('');
   setDbSavingTimeout();
 });
 
 app.get('/api/nextPlayerId', (req, res) => {
   res.json(leaderboard.getNextPlayerId());
+});
+
+app.get('/api/key', (req, res) => {
+  res.json(leaderboard.getKey(req.query));
 });
 
 let dbSavingTimeout;
