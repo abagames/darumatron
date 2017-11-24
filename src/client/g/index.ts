@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import * as pag from 'pag';
 import * as ppe from 'ppe';
+import * as gcc from 'gcc';
 
 import { Actor, Text, rotationNum } from './actor';
 import Random from './random';
@@ -41,6 +42,9 @@ export function init(initFunc: Function = null, tempo = 120) {
     isMirrorY: true,
     rotationNum,
     scale: 3
+  });
+  gcc.setOptions({
+    scale: 2,
   });
   limitColors();
   new p5((_p: p5) => {
@@ -115,7 +119,7 @@ export function titleGames() {
   });
 }
 
-function setGenerationSeeds(seed: number) {
+export function setGenerationSeeds(seed: number) {
   pag.setSeed(seed);
   ppe.setSeed(seed);
   ppe.reset();
@@ -306,6 +310,7 @@ export class Game {
     }
     this.drawSceneText();
     this.ticks++;
+    //gcc.capture(this.screen.canvas);
   }
 
   drawSceneText() {
