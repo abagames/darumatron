@@ -21,7 +21,8 @@ export class Actor {
   isAlive = true;
   priority = 1;
   ticks = 0;
-  sprite: { pixels: pag.Pixel[][][], offset: p5.Vector }[] = [];
+  sprites: { pixels: pag.Pixel[][][], offset: p5.Vector }[] = [];
+  spriteImages: { images: HTMLImageElement[], offset: p5.Vector }[] = [];
   type: string;
   collisionType: string;
   collision = g.p.createVector(8, 8);
@@ -49,7 +50,7 @@ export class Actor {
     this.prevPos.set(this.pos);
     this.pos.add(this.vel);
     g.Vector.addAngle(this.pos, this.angle, this.speed);
-    if (this.sprite != null) {
+    if (this.sprites != null) {
       this.drawSprite();
     }
     _.forEach(this.modules, m => {
@@ -129,16 +130,24 @@ export class Actor {
   }
 
   addSpritePixels(pixels: pag.Pixel[][][], offsetX = 0, offsetY = 0) {
-    this.sprite.push({ pixels, offset: g.p.createVector(offsetX, offsetY) });
+    this.sprites.push({ pixels, offset: g.p.createVector(offsetX, offsetY) });
   }
 
-  clearSpritePixels() {
-    this.sprite = [];
+  addSpriteImages(images: HTMLImageElement[], offsetX = 0, offsetY = 0) {
+    this.spriteImages.push({ images, offset: g.p.createVector(offsetX, offsetY) });
+  }
+
+  clearSprites() {
+    this.sprites = [];
+    this.spriteImages = [];
   }
 
   drawSprite(x: number = this.pos.x, y: number = this.pos.y) {
-    _.forEach(this.sprite, s => {
+    _.forEach(this.sprites, s => {
       this.drawSpritePixels(s.pixels, x + s.offset.x, y + s.offset.y);
+    });
+    _.forEach(this.spriteImages, s => {
+      this.drawSpriteImages(s.images, x + s.offset.x, y + s.offset.y);
     });
   }
 
@@ -152,6 +161,19 @@ export class Actor {
       }
       const ri = Math.round(a / (Math.PI * 2 / rotationNum)) % rotationNum;
       pag.draw(this.context, pixels, x, y, ri);
+    }
+  }
+
+  drawSpriteImages(images: HTMLImageElement[], x: number, y: number) {
+    if (images.length <= 1) {
+      pag.drawImage(this.context, images, x, y);
+    } else {
+      let a = this.angle;
+      if (a < 0) {
+        a = Math.PI * 2 + a % (Math.PI * 2);
+      }
+      const ri = Math.round(a / (Math.PI * 2 / rotationNum)) % rotationNum;
+      pag.drawImage(this.context, images, x, y, ri);
     }
   }
 
@@ -240,19 +262,22 @@ export class Item extends Actor {
 }
 
 export class Wall extends Actor {
+  pagPattern;
+  pagOptions;
+
   constructor(pos: p5.Vector, width = 8, height = 8, hue = 0.7, seed: number = null,
     game: g.Game = g.game) {
     super({}, game);
     const pw = Math.round(width / 4);
     const ph = Math.round(height / 4);
-    const pt = [_.times(pw, () => 'o').join('')].concat(
+    this.pagPattern = [_.times(pw, () => 'o').join('')].concat(
       _.times(ph - 1, () => ['o'].concat(_.times(pw - 1, () => 'x')).join(''))
     );
-    let options: any = { isMirrorX: true, hue };
+    this.pagOptions = { isMirrorX: true, hue };
     if (seed != null) {
-      options.seed = seed;
+      this.pagOptions.seed = seed;
     }
-    this.addSpritePixels(pag.generate(pt, options));
+    this.addSpritePixels(pag.generate(this.pagPattern, this.pagOptions));
     this.type = this.collisionType = 'wall';
     this.pos.set(pos);
     this.priority = 0.2;

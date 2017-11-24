@@ -69,9 +69,7 @@ function begin() {
   _.times(7, i => {
     const dr = new Daruma(true);
   });
-  floor = new Floor
-    (g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
-  floor.priority = -1;
+  floor = new Floor();
   for (let i = 0; i < 50; i++) {
     new g.Star(0.2, 3, 0, 0);
   }
@@ -154,7 +152,7 @@ class Daruma extends g.Enemy {
     super();
     this.getModule('RemoveWhenInAndOut').paddingOuter = 999;
     this.options.hasTrail = false;
-    this.clearSpritePixels();
+    this.clearSprites();
     const min = _.minBy(this.game.actorPool.get('enemy'), a => a.pos.y);
     const y = min == null ? -25 : min.pos.y - 25;
     let width = 6;
@@ -178,8 +176,8 @@ class Daruma extends g.Enemy {
     const pat = _.times(width, () => 'x').join('');
     this.collision.set(width * 7, 20);
     const color = random.select(this.colors);
-    this.addSpritePixels(pag.generate([pat, pat, pat], {
-      isMirrorX: true, hue: color[0], saturation: color[1]
+    this.addSpriteImages(pag.generateImages([pat, pat, pat], {
+      isMirrorX: true, hue: color[0], saturation: color[1], rotationNum: 1
     }));
     this.pos.set(x, y);
     new g.CollideToActor(this, { velRatio: 0, types: ['enemy', 'wall'] });
@@ -224,6 +222,14 @@ class Item extends g.Item {
 }
 
 class Floor extends g.Wall {
+  constructor() {
+    super(g.p.createVector(screen.size.x / 2, screen.size.y - 20), 100, 10);
+    this.clearSprites();
+    this.pagOptions.rotationNum = 1;
+    this.addSpriteImages(pag.generateImages(this.pagPattern, this.pagOptions));
+    this.priority = -1;
+  }
+
   update() {
     super.update();
     this.vel.y *= 0.99;
